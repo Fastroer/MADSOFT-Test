@@ -5,25 +5,29 @@ services:
     container_name: pg_db
     image: postgres:14-alpine
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: my_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-  
+    env_file:
+      - .env
+
   test_db:
     container_name: test_pg_db
     image: postgres:14-alpine
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: test_db
+      POSTGRES_USER: ${TEST_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${TEST_POSTGRES_DB}
     ports:
       - "5433:5432"
     volumes:
       - test_postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
 
   pgadmin:
     image: dpage/pgadmin4
@@ -32,6 +36,8 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
+    env_file:
+      - .env
 
   public_api:
     build:
@@ -43,6 +49,8 @@ services:
       - db
     volumes:
       - ./db:/app/db
+    env_file:
+      - .env
     
   private_api:
     build:
@@ -50,15 +58,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8001:8000"
-    environment:
-      - MINIO_BUCKET_NAME=memes
-      - AUTH_TOKEN=JflNaq4Pmsh8fhJq
     depends_on:
       - db
       - minio
     volumes:
       - ./db:/app/db
       - ./s3:/app/s3
+    env_file:
+      - .env
 
   minio:
     image: minio/minio
@@ -67,12 +74,14 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: madsoft_admin
-      MINIO_ROOT_PASSWORD: madsoft_password
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - minio_data:/data
       - ./init_minio.sh:/usr/bin/init_minio.sh
     entrypoint: /usr/bin/init_minio.sh
+    env_file:
+      - .env
 
   tests:
     build:
@@ -82,8 +91,6 @@ services:
       - public_api
       - private_api
       - test_db
-    environment:
-      AUTH_TOKEN: JflNaq4Pmsh8fhJq
     volumes:
       - ./db:/db
       - ./s3:/s3
@@ -91,7 +98,8 @@ services:
       - ./public_api/app/routes:/routes
       - ./private_api:/private_api
       - ./private_api/app/private_routes:/private_routes
-
+    env_file:
+      - .env
 
 volumes:
   minio_data:
