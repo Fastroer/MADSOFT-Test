@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class MemeBase(BaseModel):
     title: str
@@ -9,5 +9,5 @@ class MemeBase(BaseModel):
 class MemeInfo(MemeBase):
     id: int
     
-    class Config:
+    class ConfigDict:
         from_attributes = True

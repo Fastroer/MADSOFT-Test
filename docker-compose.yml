@@ -11,7 +11,19 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql/data/
+  
+  test_db:
+    container_name: test_pg_db
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: test_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data/
 
   pgadmin:
     image: dpage/pgadmin4
@@ -38,6 +50,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8001:8000"
+    environment:
+      - MINIO_BUCKET_NAME=memes
+      - AUTH_TOKEN=JflNaq4Pmsh8fhJq
     depends_on:
       - db
       - minio
@@ -56,6 +71,29 @@ services:
       MINIO_ROOT_PASSWORD: madsoft_password
     volumes:
       - minio_data:/data
+      - ./init_minio.sh:/usr/bin/init_minio.sh
+    entrypoint: /usr/bin/init_minio.sh
+
+  tests:
+    build:
+      context: ./tests
+      dockerfile: Dockerfile
+    depends_on:
+      - public_api
+      - private_api
+      - test_db
+    environment:
+      AUTH_TOKEN: JflNaq4Pmsh8fhJq
+    volumes:
+      - ./db:/db
+      - ./s3:/s3
+      - ./public_api:/public_api
+      - ./public_api/app/routes:/routes
+      - ./private_api:/private_api
+      - ./private_api/app/private_routes:/private_routes
+
 
 volumes:
   minio_data:
+  test_postgres_data:
+  postgres_data:

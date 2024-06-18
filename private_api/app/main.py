@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from app.routes import media
+from private_routes.media import router
 
-app = FastAPI(docs_url="/private-api")
+private_app = FastAPI(docs_url="/private-api")
 
-app.include_router(media.router)
+private_app.include_router(router)

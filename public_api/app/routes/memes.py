@@ -19,22 +19,23 @@ async def read_memes(
     session: AsyncSession = Depends(get_session)
 ):
     """
-    Возвращает список мемов.
+    Retrieve a list of memes.
+
+    This endpoint allows users to fetch a paginated list of memes from the database.
 
     Parameters:
-    - skip (int, optional): Количество мемов для пропуска (по умолчанию 0).
-    - limit (int, optional): Максимальное количество мемов для возврата (по умолчанию 10).
+    - skip (int, optional): The number of memes to skip (default is 0).
+    - limit (int, optional): The maximum number of memes to return (default is 10).
+    - session (AsyncSession): The database session (provided by dependency injection).
 
     Returns:
-    - List[MemeInfo]: Список мемов с указанным смещением и лимитом.
+    - List[MemeInfo]: A list of memes with the specified offset and limit.
 
     Raises:
-    - HTTPException(404): Если не найдено ни одного мема.
+    - HTTPException(404): If no memes are found.
     """
     result = await session.execute(select(Meme).offset(skip).limit(limit))
     memes = result.scalars().all()
-    if not memes:
-        raise HTTPException(status_code=404, detail="No memes found")
     return memes
 
 @router.get("/memes/{meme_id}", response_model=MemeInfo)
@@ -43,16 +44,19 @@ async def read_meme(
     session: AsyncSession = Depends(get_session)
 ):
     """
-    Возвращает данные одного мема по его идентификатору.
+    Retrieve a meme by its ID.
+
+    This endpoint allows users to fetch the details of a specific meme by its unique identifier.
 
     Parameters:
-    - meme_id (int): Идентификатор мема для получения данных.
+    - meme_id (int): The ID of the meme to retrieve.
+    - session (AsyncSession): The database session (provided by dependency injection).
 
     Returns:
-    - MemeInfo: Данные мема с указанным идентификатором.
+    - MemeInfo: The details of the meme with the specified ID.
 
     Raises:
-    - HTTPException(404): Если мем с указанным идентификатором не найден.
+    - HTTPException(404): If a meme with the specified ID is not found.
     """
     result = await session.execute(select(Meme).filter(Meme.id == meme_id))
     meme = result.scalar()

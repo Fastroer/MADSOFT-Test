@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from app.routes import memes
+from routes.memes import router
 
-app = FastAPI(docs_url="/api")
+public_app = FastAPI(docs_url="/api")
 
-app.include_router(memes.router)
+public_app.include_router(router)
