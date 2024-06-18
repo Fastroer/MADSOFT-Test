@@ -6,6 +6,6 @@ COPY ./requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./app .
+COPY ./app /app
 
-CMD ["uvicorn", "main:public_app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "alembic -c /app/db/alembic.ini upgrade head && uvicorn main:public_app --host 0.0.0.0 --port 8000"]
